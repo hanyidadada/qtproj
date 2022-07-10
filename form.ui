@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>944</width>
-    <height>910</height>
+    <width>1520</width>
+    <height>732</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,8 +22,8 @@
   <widget class="QPushButton" name="configbn">
    <property name="geometry">
     <rect>
-     <x>670</x>
-     <y>760</y>
+     <x>1240</x>
+     <y>700</y>
      <width>81</width>
      <height>21</height>
     </rect>
@@ -35,8 +35,8 @@
   <widget class="QPushButton" name="sendbn">
    <property name="geometry">
     <rect>
-     <x>800</x>
-     <y>760</y>
+     <x>1370</x>
+     <y>700</y>
      <width>80</width>
      <height>21</height>
     </rect>
@@ -48,8 +48,8 @@
   <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>660</x>
-     <y>460</y>
+     <x>1230</x>
+     <y>400</y>
      <width>229</width>
      <height>281</height>
     </rect>
@@ -212,10 +212,10 @@
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>610</x>
-     <y>30</y>
+     <x>1190</x>
+     <y>20</y>
      <width>20</width>
-     <height>661</height>
+     <height>691</height>
     </rect>
    </property>
    <property name="orientation">
@@ -225,7 +225,7 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>640</x>
+     <x>1210</x>
      <y>20</y>
      <width>291</width>
      <height>361</height>
@@ -244,94 +244,119 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="verticalLayoutWidget_2">
+  <widget class="QWidget" name="verticalLayoutWidget_3">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>610</x>
      <y>10</y>
      <width>581</width>
-     <height>881</height>
+     <height>691</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="portreglayout" stretch="0,0,0,0,0,0,0,0">
+   <layout class="QVBoxLayout" name="portreglayout2" stretch="0,0,0,0,0,0,0,0,0,0,0,0">
     <property name="sizeConstraint">
      <enum>QLayout::SetDefaultConstraint</enum>
     </property>
     <item>
-     <widget class="QLabel" name="port0label">
-      <property name="text">
-       <string>PORT0</string>
+     <widget class="Line" name="line_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="port0layout">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QLabel" name="init0label">
-        <property name="text">
-         <string>initiatior</string>
+       <widget class="Line" name="line_8">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTableView" name="init0table"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="taraget0label">
+       <widget class="QLabel" name="port3label_2">
         <property name="text">
-         <string>target</string>
+         <string>PORT3</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTableView" name="taraget0table"/>
+       <widget class="Line" name="line_9">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="port1label">
-      <property name="text">
-       <string>PORT1</string>
+     <widget class="Line" name="line_14">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="port1layout">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QLabel" name="init1label">
-        <property name="text">
-         <string>initiatior</string>
+       <widget class="Line" name="line_11">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTableView" name="init1table"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="taraget1label">
+       <widget class="QLabel" name="init3label">
         <property name="text">
-         <string>target</string>
+         <string>Initiatior</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QTableView" name="taraget1table"/>
+       <widget class="Line" name="line_12">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="taraget3label">
+        <property name="text">
+         <string>Target</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_13">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="port3label">
-      <property name="text">
-       <string>PORT3</string>
+     <widget class="Line" name="line_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="port3layout">
       <item>
-       <widget class="QLabel" name="init3label">
-        <property name="text">
-         <string>initiatior</string>
+       <widget class="Line" name="line_7">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
@@ -339,30 +364,124 @@
        <widget class="QTableView" name="init3table"/>
       </item>
       <item>
-       <widget class="QLabel" name="taraget3label">
-        <property name="text">
-         <string>target</string>
+       <widget class="Line" name="line_3">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QTableView" name="taraget3table"/>
       </item>
+      <item>
+       <widget class="Line" name="line_10">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
-     <widget class="QLabel" name="port4label">
-      <property name="text">
-       <string>PORT4</string>
+     <widget class="Line" name="line_6">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="port4layout">
+     <layout class="QHBoxLayout" name="horizontalLayout_9">
+      <item>
+       <widget class="Line" name="line_44">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="port1label_2">
+        <property name="text">
+         <string>PORT4</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_45">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="Line" name="line_15">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QLabel" name="init4label">
         <property name="text">
-         <string>initiatior</string>
+         <string>Initiatior</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_16">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="taraget4label">
+        <property name="text">
+         <string>Target</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_17">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_18">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="port4layout_2">
+      <item>
+       <widget class="Line" name="line_41">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
@@ -370,9 +489,9 @@
        <widget class="QTableView" name="init4table"/>
       </item>
       <item>
-       <widget class="QLabel" name="taraget4label">
-        <property name="text">
-         <string>target</string>
+       <widget class="Line" name="line_43">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>
@@ -380,6 +499,282 @@
        <widget class="QTableView" name="taraget4table">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_42">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>581</width>
+     <height>691</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="portreglayout2_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetDefaultConstraint</enum>
+    </property>
+    <item>
+     <widget class="Line" name="line_19">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <widget class="Line" name="line_20">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="port0label">
+        <property name="text">
+         <string>PORT0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_21">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_22">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="Line" name="line_23">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="init0label">
+        <property name="text">
+         <string>Initiatior</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_24">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="taraget0label">
+        <property name="text">
+         <string>Target</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_25">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_26">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="port3layout_2">
+      <item>
+       <widget class="Line" name="line_27">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableView" name="init0table"/>
+      </item>
+      <item>
+       <widget class="Line" name="line_28">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableView" name="taraget0table"/>
+      </item>
+      <item>
+       <widget class="Line" name="line_29">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_30">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_8">
+      <item>
+       <widget class="Line" name="line_36">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="port1label">
+        <property name="text">
+         <string>PORT1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_37">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_31">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_7">
+      <item>
+       <widget class="Line" name="line_32">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="init1label">
+        <property name="text">
+         <string>Initiatior</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_33">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="taraget1label">
+        <property name="text">
+         <string>Target</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_34">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_35">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="port4layout_3">
+      <item>
+       <widget class="Line" name="line_38">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableView" name="init1table"/>
+      </item>
+      <item>
+       <widget class="Line" name="line_39">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableView" name="taraget1table">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_40">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
        </widget>
       </item>

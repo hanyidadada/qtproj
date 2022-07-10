@@ -59,7 +59,7 @@ class WorkThread(QThread):
             if self.working:
                 # 等待5秒后，给触发信号，并传递test
                 self.trigger.emit('test2')
-                time.sleep(15)
+                time.sleep(5)
 
 
 class Widget(QWidget):
@@ -103,66 +103,48 @@ class Widget(QWidget):
         if len(self.handleData.receive_mac) != 17 or not validate_mac(self.handleData.receive_mac):
             messageDialog('警告', 'mac接收地址配置出错！请重试！')
             return
+        self.handleData.config_port()
         self.macconfigflag = True
         self.worker.working = True
         messageDialog('成功', 'mac地址配置完成！')
 
     def updateData(self, data):
         qmtx.lock()
-        for v in range(0,10):
-            index = self.sysregmodel.index(v, 1)
+        self.handleData.recievelock.acquire()
+        self.handleData.receive_data_content = []
+        self.handleData.recievelock.release()
+        self.handleData.receive_data(74)
+        for v in range(74):
             self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
             self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.sysregmodel.setData(index, ret, Qt.DisplayRole)
+        self.handleData.receive_data_process.join()
+        for v in range(0, 10):
+            index = self.sysregmodel.index(v, 1)
+            self.sysregmodel.setData(index,  self.handleData.receive_data_content[v], Qt.DisplayRole)
         for v in range(0,9):
             index = self.init0model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.init0model.setData(index, ret, Qt.DisplayRole)
+            self.init0model.setData(index, self.handleData.receive_data_content[v + 10], Qt.DisplayRole)
         for v in range(0,9):
             index = self.init1model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.init1model.setData(index, ret, Qt.DisplayRole)
+            self.init1model.setData(index, self.handleData.receive_data_content[v + 10], Qt.DisplayRole)
         for v in range(0,9):
             index = self.init3model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.init3model.setData(index, ret, Qt.DisplayRole)
+            self.init3model.setData(index, self.handleData.receive_data_content[v + 10 + 8*1], Qt.DisplayRole)
         for v in range(0,9):
             index = self.init4model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.init4model.setData(index, ret, Qt.DisplayRole)
+            self.init4model.setData(index, self.handleData.receive_data_content[v + 10 + 8*2], Qt.DisplayRole)
         for v in range(0,9):
             index = self.taraget0model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.taraget0model.setData(index, ret, Qt.DisplayRole)
+            self.taraget0model.setData(index, self.handleData.receive_data_content[v + 10 + 8*3], Qt.DisplayRole)
         for v in range(0,9):
             index = self.taraget1model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.taraget1model.setData(index, ret, Qt.DisplayRole)
+            self.taraget1model.setData(index, self.handleData.receive_data_content[v + 10 + 8*4], Qt.DisplayRole)
         for v in range(0,9):
             index = self.taraget3model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.taraget3model.setData(index, ret, Qt.DisplayRole)
+            self.taraget3model.setData(index, self.handleData.receive_data_content[v + 10 + 8*5], Qt.DisplayRole)
         for v in range(0,9):
             index = self.taraget4model.index(v, 1)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
-            ret = self.handleData.analyze_data()
-            self.taraget4model.setData(index, ret, Qt.DisplayRole)
+            self.taraget4model.setData(index, self.handleData.receive_data_content[v + 10 + 8*6], Qt.DisplayRole)
         qmtx.unlock()
 
     def sysregtableInit(self):
@@ -376,9 +358,6 @@ class Widget(QWidget):
         self.init1model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.init1model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.init1model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
-
-
-
 
 
 if __name__ == "__main__":

@@ -1,11 +1,12 @@
-import os
+from multiprocessing.connection import wait
 import re
 import random
 import binascii
 import psutil
-from scapy.all import raw, sendp, sniff, Ether
+from scapy.all import raw, Ether, sniff, sendp
 import threading
 import time
+import os
 
 
 class HandleData:
@@ -13,13 +14,15 @@ class HandleData:
     def __init__(self):
         self.macflag = False
         self.receive_data_content = ""
-#        self.send_mac = "88:a4:c2:98:c3:99"
-#        self.receive_mac = "00:0c:29:0c:38:8a"
         self.send_mac = ""
+        # self.receive_mac = "00:0c:29:0c:38:8a"
         self.receive_mac = ""
         self.data_content = ""
-        self.analyze_data_content = ""
         self.portname = ""
+        self.receive_data_content = []
+        self.recievelock = threading.Lock()
+
+    def config_port(self):
         for k, v in psutil.net_if_addrs().items():
             for item in v:
                 address = item[1]
@@ -30,19 +33,19 @@ class HandleData:
                     if "-" in address and len(address)==17 and self.send_mac.upper().replace('-', ':') == address.upper():
                         self.portname = k
 
-    def analyze_data(self):
-        self.analyze_data_content = self.receive_data_content
-        self.analyze_data_content = self.analyze_data_content.replace(' ', '')
-        self.analyze_data_content = self.analyze_data_content[32:]
-        # print(self.analyze_data_content)
+    def analyze_data(self, data):
+        analyze_data_content = data.replace(' ', '')
+        analyze_data_content = analyze_data_content[32:]
+        # print(analyze_data_content)
 
         # 接下来需要解析数据
         # 数据包长度(4Byte)
-        config_len = self.analyze_data_content[0:2]
+        config_len = analyze_data_content[0:2]
+        # print("0x" +config_len)
         # 防止收到的包过长
-        self.analyze_data_content = self.analyze_data_content[0:8*int(config_len)]
+        analyze_data_content = analyze_data_content[0:8*int(config_len)]
         # 配置包的方向为)
-        config_channel = '{:016b}'.format(int(self.analyze_data_content[4:8], 16))
+        config_channel = '{:016b}'.format(int(analyze_data_content[4:8], 16))
         config_channel = config_channel[6:9]
         if config_channel == "100":
             config_channel_text = "全局配置"
@@ -50,41 +53,48 @@ class HandleData:
             config_channel_text = "tcam配置"
         else:
             config_channel_text = "其他配置"
+        # print(config_channel_text)
 
         # 32位随机值为
-        config_id = self.analyze_data_content[8:16]
+        config_id = analyze_data_content[8:16]
         config_id = re.sub(r"(?<=\w)(?=(?:\w\w)+$)", " ", config_id)
+        # print(config_id)
 
-        config_rwcr = '{:04b}'.format(int(self.analyze_data_content[16], 16))
+        config_rwcr = '{:04b}'.format(int(analyze_data_content[16], 16))
 
         # 配置请求为
         if config_rwcr[0] == "1":
             config_req = "配置请求有效"
         else:
             config_req = "配置请求无效"
+        # print(config_req)
 
         # 读写状态为
         if config_rwcr[1] == "1":
             config_write_read = "写"
         else:
             config_write_read = "读"
+        # print(config_write_read)
 
         # 读清零标志为
         if config_rwcr[2] == "1":
             config_clr = "是"
         else:
             config_clr = "否"
+        # print(config_clr)
 
         # 全局地址为
-        global_addr = self.analyze_data_content[17:24]
+        global_addr = analyze_data_content[17:24]
         global_addr = re.sub(r"(?<=\w)(?=(?:\w\w)+$)", " ", global_addr)
+        # print(global_addr.replace(" ", ""))
 
         # 配置内容为
         config_data = ""
-        config_data = self.analyze_data_content[24:-8]
+        config_data = analyze_data_content[24:-8]
         config_data = re.sub(r"(?<=\w)(?=(?:\w\w)+$)", " ", config_data)
+        # print(config_data.replace(" ", ""))
 
-        last_data = '{:032b}'.format(int(self.analyze_data_content[-8:], 16))
+        last_data = '{:032b}'.format(int(analyze_data_content[-8:], 16))
 
         # config_err为
         if last_data[-4:] == "0000":
@@ -101,12 +111,14 @@ class HandleData:
             config_err = "删除配置表项失败"
         else:
             config_err = "解析失败"
+        # print(config_err)
 
         # 查到的规则索引号为
         config_look_hit_idx = last_data[12:28]
         config_look_hit_idx = hex(int(config_look_hit_idx, 2))[2:].zfill(4)
         config_look_hit_idx = re.sub(
             r"(?<=\w)(?=(?:\w\w)+$)", " ", config_look_hit_idx)
+        # print(config_look_hit_idx)
 
         return config_data.replace(" ", "")
 
@@ -115,14 +127,8 @@ class HandleData:
         receive_addr = self.receive_mac.upper().replace(':', '')
         ethernet = Ether(dst=self.receive_mac,
                          src=self.send_mac, type=0xA000)
-
-        receive_data_process = threading.Thread(
-            target=self.receive_data, args=(self.portname,))
-        receive_data_process.start()
-
         res16 = bytes.fromhex("0000")
         payload = self.data_content
-
         crc_check_bw = "%08x" % (binascii.crc32(binascii.a2b_hex(
             receive_addr+send_addr+"A0000000"+payload)) & 0xffffffff)
         crc_check = crc_check_bw[6:8] + crc_check_bw[4:6] + \
@@ -131,8 +137,6 @@ class HandleData:
         crc_check = bytes.fromhex(crc_check)
         package = ethernet/res16/payload/crc_check
         sendp(package, iface=self.portname)
-        time.sleep(0.015)
-
 
     def config_data(self, configlen, configchannel, configreq, configwr, configclr, configaddr, configcontent):
         # 生成一个8位长的数据包长度信息
@@ -206,14 +210,50 @@ class HandleData:
         self.data_content = hex_data
 
     # 接收到数据包后进行数据存储
-    def show(self, p):
+    def process(self, p):
         come_back_hex = eval(str(raw(p)))
         come_back = come_back_hex.hex()
-        self.receive_data_content = come_back
+        self.recievelock.acquire()
+        # self.receive_data_content = self.receive_data_content + come_back + '\n'
+        ret = self.analyze_data(come_back)
+        self.receive_data_content.append(ret)
+        self.recievelock.release()
 
     # 处理接收到的数据包
-    def receive_data(self, portname):
+    def receive_thread(self,pkcount):
         filter_rule = "ether proto 0xa001"
-#        print(filter_rule)
-        sniff(count=1, iface=portname, filter=filter_rule, prn=self.show, timeout=10)
-#        print("stop sniff")
+        print(filter_rule)
+        sniff(count=pkcount, iface=self.portname, filter=filter_rule, prn=self.process)
+        print("stop sniff")
+
+    def receive_data(self, pkcount):
+        self.receive_data_process = threading.Thread(
+            target=self.receive_thread, args=(pkcount, ))
+        self.receive_data_process.start()
+
+
+if __name__ == '__main__':
+    handle = HandleData()
+    handle.receive_data(74)
+    # for k in range (12):
+    t1 = time.time()
+    for v in range(74):
+        handle.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "12000000")
+        # t2 = time.time()
+        # print("配置数据时间：" + str((t2-t1)*1000))
+        handle.send_data()
+        # t3 = time.time()
+        # print("收发数据时间：" + str((t3-t1)*1000))
+        # ret = handle.analyze_data()
+        # t4 = time.time()
+        # print("分析数据时间：" + str((t4-t1)*1000))
+        # print(ret)
+    t5 = time.time()
+    print("总时间：" + str((t5-t1)*1000))
+    handle.receive_data_process.join()
+    print(handle.receive_data_content)
+    print(len(handle.receive_data_content))
+    # handle.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "12000022")
+    # handle.send_data()
+    # ret = handle.analyze_data()
+    # print(ret
