@@ -113,39 +113,65 @@ class Widget(QWidget):
         self.handleData.recievelock.acquire()
         self.handleData.receive_data_content = []
         self.handleData.recievelock.release()
-        self.handleData.receive_data(74)
-        for v in range(74):
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "1200000" + str(random.randint(0, 7)))
-            self.handleData.send_data()
+        self.handleData.receive_data(98)
+        self.querysysreg()
+        self.queryinitreg(10)
+        self.queryinitreg(20)
+        self.queryinitreg(30)
+        self.queryinitreg(40)
+        self.queryinitreg(11)
+        self.queryinitreg(21)
+        self.queryinitreg(31)
+        self.queryinitreg(41)
         self.handleData.receive_data_process.join()
+        if len(self.handleData.receive_data_content) < 98:
+            messageDialog("警告", '接收数据丢失！请检查！')
         for v in range(0, 10):
             index = self.sysregmodel.index(v, 1)
             self.sysregmodel.setData(index,  self.handleData.receive_data_content[v], Qt.DisplayRole)
-        for v in range(0,9):
+        for v in range(0, 11):
             index = self.init0model.index(v, 1)
-            self.init0model.setData(index, self.handleData.receive_data_content[v + 10], Qt.DisplayRole)
-        for v in range(0,9):
+            self.init0model.setData(index, self.handleData.receive_data_content[(v + 10)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.init1model.index(v, 1)
-            self.init1model.setData(index, self.handleData.receive_data_content[v + 10], Qt.DisplayRole)
-        for v in range(0,9):
+            self.init1model.setData(index, self.handleData.receive_data_content[(v + 10)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.init3model.index(v, 1)
-            self.init3model.setData(index, self.handleData.receive_data_content[v + 10 + 8*1], Qt.DisplayRole)
-        for v in range(0,9):
+            self.init3model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*1)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.init4model.index(v, 1)
-            self.init4model.setData(index, self.handleData.receive_data_content[v + 10 + 8*2], Qt.DisplayRole)
-        for v in range(0,9):
+            self.init4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*2)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.taraget0model.index(v, 1)
-            self.taraget0model.setData(index, self.handleData.receive_data_content[v + 10 + 8*3], Qt.DisplayRole)
-        for v in range(0,9):
+            self.taraget0model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*3)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.taraget1model.index(v, 1)
-            self.taraget1model.setData(index, self.handleData.receive_data_content[v + 10 + 8*4], Qt.DisplayRole)
-        for v in range(0,9):
+            self.taraget1model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*4)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.taraget3model.index(v, 1)
-            self.taraget3model.setData(index, self.handleData.receive_data_content[v + 10 + 8*5], Qt.DisplayRole)
-        for v in range(0,9):
+            self.taraget3model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*5)], Qt.DisplayRole)
+        for v in range(0, 11):
             index = self.taraget4model.index(v, 1)
-            self.taraget4model.setData(index, self.handleData.receive_data_content[v + 10 + 8*6], Qt.DisplayRole)
+            self.taraget4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*6)], Qt.DisplayRole)
         qmtx.unlock()
+
+    def querysysreg(self):
+        for v in range(1,11):
+            offset = '{:02X}'.format(v*16)
+            self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000000" + offset, "1200000" + str(random.randint(0, 7)))
+            self.handleData.send_data()
+
+    def queryinitreg(self, num):
+        for v in [1, 2, 3, 7, 8, 9, 10, 11]:
+            offset = '{:03X}'.format(v*16)
+            self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ offset, "1200000" + str(random.randint(0, 7)))
+            self.handleData.send_data()
+        self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f20", "1200000" + str(random.randint(0, 7)))
+        self.handleData.send_data()
+        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f30", "1200000" + str(random.randint(0, 7)))
+        self.handleData.send_data()
+        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f40", "1200000" + str(random.randint(0, 7)))
+        self.handleData.send_data()
 
     def sysregtableInit(self):
         self.sysregmodel = QStandardItemModel(0, 2)
@@ -190,6 +216,9 @@ class Widget(QWidget):
         self.init0model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.init0model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.init0model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.init0model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.init0model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.init0model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def init1tabletableInit(self):
         self.init1model = QStandardItemModel(0, 2)
@@ -211,6 +240,9 @@ class Widget(QWidget):
         self.init1model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.init1model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.init1model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.init1model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.init1model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.init1model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def init3tabletableInit(self):
         self.init3model = QStandardItemModel(0, 2)
@@ -232,6 +264,9 @@ class Widget(QWidget):
         self.init3model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.init3model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.init3model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.init3model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.init3model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.init3model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def init4tabletableInit(self):
         self.init4model = QStandardItemModel(0, 2)
@@ -253,6 +288,9 @@ class Widget(QWidget):
         self.init4model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.init4model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.init4model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.init4model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.init4model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.init4model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def taraget0tabletableInit(self):
         self.taraget0model = QStandardItemModel(0, 2)
@@ -274,6 +312,9 @@ class Widget(QWidget):
         self.taraget0model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.taraget0model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.taraget0model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.taraget0model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.taraget0model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.taraget0model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def taraget1tabletableInit(self):
         self.taraget1model = QStandardItemModel(0, 2)
@@ -295,6 +336,9 @@ class Widget(QWidget):
         self.taraget1model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.taraget1model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.taraget1model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.taraget1model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.taraget1model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.taraget1model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def taraget3tabletableInit(self):
         self.taraget3model = QStandardItemModel(0, 2)
@@ -316,6 +360,9 @@ class Widget(QWidget):
         self.taraget3model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.taraget3model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.taraget3model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.taraget3model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.taraget3model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.taraget3model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
     def taraget4tabletableInit(self):
         self.taraget4model = QStandardItemModel(0, 2)
@@ -337,27 +384,9 @@ class Widget(QWidget):
         self.taraget4model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
         self.taraget4model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
         self.taraget4model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
-
-    def init1tabletableInit(self):
-        self.init1model = QStandardItemModel(0, 2)
-        self.init1model.setHorizontalHeaderLabels(['寄存器名', '数据'])
-        self.ui.init1table.setModel(self.init1model)
-        # 所有列自动拉伸，充满界面
-        self.ui.init1table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        # 设置只能选中整行
-        self.ui.init1table.setSelectionMode(QAbstractItemView.SingleSelection)
-        # 设置只能选中一行
-        self.ui.init1table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        # 不可编辑
-        self.ui.init1table.setEditTriggers(QTableView.NoEditTriggers)
-        self.init1model.appendRow([QStandardItem('%s' % 'rx_bytes'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'tx_bytes'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'rx_frames'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'tx_frames'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'rx_signals'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'tx_signals'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'rx_lenerr'), ])
-        self.init1model.appendRow([QStandardItem('%s' % 'rx_crcerr'), ])
+        self.taraget4model.appendRow([QStandardItem('%s' % 'Status'), ])
+        self.taraget4model.appendRow([QStandardItem('%s' % 'to_cpu_overflow_cnt'), ])
+        self.taraget4model.appendRow([QStandardItem('%s' % 'linking_cnt'), ])
 
 
 if __name__ == "__main__":

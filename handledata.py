@@ -214,16 +214,15 @@ class HandleData:
         come_back_hex = eval(str(raw(p)))
         come_back = come_back_hex.hex()
         self.recievelock.acquire()
-        # self.receive_data_content = self.receive_data_content + come_back + '\n'
         ret = self.analyze_data(come_back)
         self.receive_data_content.append(ret)
         self.recievelock.release()
 
     # 处理接收到的数据包
-    def receive_thread(self,pkcount):
+    def receive_thread(self, pkcount):
         filter_rule = "ether proto 0xa001"
         print(filter_rule)
-        sniff(count=pkcount, iface=self.portname, filter=filter_rule, prn=self.process)
+        sniff(count=pkcount, iface=self.portname, filter=filter_rule, prn=self.process, timeout = 2)
         print("stop sniff")
 
     def receive_data(self, pkcount):
