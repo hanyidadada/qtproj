@@ -1,12 +1,11 @@
-from multiprocessing.connection import wait
 import re
 import random
 import binascii
 import psutil
 from scapy.all import raw, Ether, sniff, sendp
 import threading
-import time
 import os
+import sys
 
 
 class HandleData:
@@ -30,7 +29,7 @@ class HandleData:
                     if ":" in address and len(address)==17 and self.send_mac.upper().replace('-', ':') == address.upper():
                         self.portname = k
                 else:
-                    if "-" in address and len(address)==17 and self.send_mac.upper().replace('-', ':') == address.upper():
+                    if "-" in address and len(address)==17 and self.send_mac.upper().replace(':', '-') == address.upper():
                         self.portname = k
 
     def analyze_data(self, data):
@@ -136,7 +135,7 @@ class HandleData:
         payload = bytes.fromhex(payload)
         crc_check = bytes.fromhex(crc_check)
         package = ethernet/res16/payload/crc_check
-        sendp(package, iface=self.portname)
+        sendp(package, iface=self.portname, verbose=0)
 
     def config_data(self, configlen, configchannel, configreq, configwr, configclr, configaddr, configcontent):
         # 生成一个8位长的数据包长度信息
@@ -221,38 +220,9 @@ class HandleData:
     # 处理接收到的数据包
     def receive_thread(self, pkcount):
         filter_rule = "ether proto 0xa001"
-        print(filter_rule)
-        sniff(count=pkcount, iface=self.portname, filter=filter_rule, prn=self.process, timeout = 2)
-        print("stop sniff")
+        sniff(count=pkcount, iface=self.portname, filter=filter_rule, prn=self.process, timeout = 3)
 
     def receive_data(self, pkcount):
         self.receive_data_process = threading.Thread(
             target=self.receive_thread, args=(pkcount, ))
         self.receive_data_process.start()
-
-
-if __name__ == '__main__':
-    handle = HandleData()
-    handle.receive_data(74)
-    # for k in range (12):
-    t1 = time.time()
-    for v in range(74):
-        handle.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "12000000")
-        # t2 = time.time()
-        # print("配置数据时间：" + str((t2-t1)*1000))
-        handle.send_data()
-        # t3 = time.time()
-        # print("收发数据时间：" + str((t3-t1)*1000))
-        # ret = handle.analyze_data()
-        # t4 = time.time()
-        # print("分析数据时间：" + str((t4-t1)*1000))
-        # print(ret)
-    t5 = time.time()
-    print("总时间：" + str((t5-t1)*1000))
-    handle.receive_data_process.join()
-    print(handle.receive_data_content)
-    print(len(handle.receive_data_content))
-    # handle.config_data( "5", "全局配置", "配置请求有效", "写", "是", "00010000", "12000022")
-    # handle.send_data()
-    # ret = handle.analyze_data()
-    # print(ret

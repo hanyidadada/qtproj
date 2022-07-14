@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 7.0.2, 2022-07-11T17:01:16. -->
+<!-- Written by QtCreator 7.0.2, 2022-07-13T19:01:11. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -85,6 +85,9 @@
     <valuelist type="QVariantList" key="ClangTools.SuppressedDiagnostics"/>
     <value type="bool" key="ClangTools.UseGlobalSettings">true</value>
    </valuemap>
+   <valuemap type="QVariantMap" key="CppEditor.QuickFix">
+    <value type="bool" key="UseGlobalSettings">true</value>
+   </valuemap>
   </valuemap>
  </data>
  <data>
@@ -139,7 +142,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">F:/qt/new/handledata.py</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration.F:/qt/new/handledata.py</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">F:/qt/new/handledata.py</value>
-    <value type="QString" key="PythonEditor.RunConfiguation.Interpreter">{6cf5b4ff-e58c-4d71-a52d-12f7dab8a1d1}</value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Interpreter">{87263bba-f506-45d5-b729-8c3da1f0a164}</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Script">F:\qt\new\handledata.py</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>

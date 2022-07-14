@@ -3,22 +3,16 @@ import os
 import re
 import sys
 import time
-import random
+import threading
 from pathlib import Path
-from PySide6.QtWidgets import QApplication, QWidget, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtWidgets import QHeaderView, QAbstractItemView, QTableView
-from PySide6.QtCore import QFile, QThread, Signal, Qt, QMutex
+from PySide6.QtCore import QFile, QThread, Qt, QMutex, Signal
 from PySide6.QtGui import QStandardItemModel, QStandardItem
 from PySide6.QtUiTools import QUiLoader
 from handledata import HandleData
 
 qmtx = QMutex()
-
-
-def messageDialog(title, str):
-    # 核心功能代码就两行，可以加到需要的地方
-    msg_box = QMessageBox(QMessageBox.Warning, title, str)
-    msg_box.exec()
 
 
 def validate_mac(mac):
@@ -37,7 +31,6 @@ def validate_mac(mac):
             return True
         else:
             return False
-
 
 class WorkThread(QThread):
     # 定义一个信号
@@ -59,14 +52,14 @@ class WorkThread(QThread):
             if self.working:
                 # 等待5秒后，给触发信号，并传递test
                 self.trigger.emit('test2')
-                time.sleep(5)
+                time.sleep(10)
 
 
-class Widget(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         self.macconfigflag = False
         self.info = ""
-        super(Widget, self).__init__()
+        super(MainWindow, self).__init__()
         self.load_ui()
         self.ui.smacline.setMaxLength(17)
         self.ui.rmacline.setMaxLength(17)
@@ -85,28 +78,47 @@ class Widget(QWidget):
         self.worker.start()
 
     def load_ui(self):
+        self.desktop = QApplication.instance().screens()[0].size()
+        self.screenheight = self.desktop.height()
+        self.screenwidth = self.desktop.width()
+        self.height = int(self.screenheight * 0.9)
+        self.width = int(self.screenwidth * 0.9)
+        self.resize(self.width, self.height)
         loader = QUiLoader()
         path = os.fspath(Path(__file__).resolve().parent / "form.ui")
         ui_file = QFile(path)
         ui_file.open(QFile.ReadOnly)
+
         self.ui = loader.load(ui_file, self)
         self.ui.configbn.clicked.connect(self.configmac)
         ui_file.close()
 
-    def configmac(self):
+        self.setCentralWidget(self.ui)
+        self.setWindowTitle("sg测试工具")
 
+    def messageDialog(self, title, str):
+        # 核心功能代码就两行，可以加到需要的地方
+        msg_box = QMessageBox(QMessageBox.Warning, title, str)
+        msg_box.exec()
+
+    def configmac(self):
+        flag = 0
         self.handleData.send_mac = self.ui.smacline.text()
         if len(self.handleData.send_mac) != 17 or not validate_mac(self.handleData.send_mac):
-            messageDialog('警告', 'mac发送地址配置出错！请重试！')
-            return
+            flag = 1
         self.handleData.receive_mac = self.ui.rmacline.text()
         if len(self.handleData.receive_mac) != 17 or not validate_mac(self.handleData.receive_mac):
-            messageDialog('警告', 'mac接收地址配置出错！请重试！')
+            flag = 2
+        if flag == 1:
+            self.messageDialog('警告', 'mac发送地址配置出错！请重试！')
             return
+        elif flag == 2:
+            self.messageDialog('警告', 'mac接收地址配置出错！请重试！')
+            return
+        self.messageDialog('成功', 'mac地址配置完成！')
         self.handleData.config_port()
         self.macconfigflag = True
         self.worker.working = True
-        messageDialog('成功', 'mac地址配置完成！')
 
     def updateData(self, data):
         qmtx.lock()
@@ -125,7 +137,11 @@ class Widget(QWidget):
         self.queryinitreg(41)
         self.handleData.receive_data_process.join()
         if len(self.handleData.receive_data_content) < 98:
-            messageDialog("警告", '接收数据丢失！请检查！')
+            self.messageDialog("警告", '接收数据丢失！请检查,重新配置！'+str(len(self.handleData.receive_data_content)))
+            self.macconfigflag = False
+            self.worker.working = False
+            qmtx.unlock()
+            return
         for v in range(0, 10):
             index = self.sysregmodel.index(v, 1)
             self.sysregmodel.setData(index,  self.handleData.receive_data_content[v], Qt.DisplayRole)
@@ -134,43 +150,43 @@ class Widget(QWidget):
             self.init0model.setData(index, self.handleData.receive_data_content[(v + 10)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.init1model.index(v, 1)
-            self.init1model.setData(index, self.handleData.receive_data_content[(v + 10)], Qt.DisplayRole)
+            self.init1model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*1)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.init3model.index(v, 1)
-            self.init3model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*1)], Qt.DisplayRole)
+            self.init3model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*2)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.init4model.index(v, 1)
-            self.init4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*2)], Qt.DisplayRole)
+            self.init4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*3)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.taraget0model.index(v, 1)
-            self.taraget0model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*3)], Qt.DisplayRole)
+            self.taraget0model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*4)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.taraget1model.index(v, 1)
-            self.taraget1model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*4)], Qt.DisplayRole)
+            self.taraget1model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*5)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.taraget3model.index(v, 1)
-            self.taraget3model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*5)], Qt.DisplayRole)
+            self.taraget3model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*6)], Qt.DisplayRole)
         for v in range(0, 11):
             index = self.taraget4model.index(v, 1)
-            self.taraget4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*6)], Qt.DisplayRole)
+            self.taraget4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*7)], Qt.DisplayRole)
         qmtx.unlock()
 
     def querysysreg(self):
         for v in range(1,11):
             offset = '{:02X}'.format(v*16)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000000" + offset, "1200000" + str(random.randint(0, 7)))
+            self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000000" + offset, "00000000")
             self.handleData.send_data()
 
     def queryinitreg(self, num):
         for v in [1, 2, 3, 7, 8, 9, 10, 11]:
             offset = '{:03X}'.format(v*16)
-            self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ offset, "1200000" + str(random.randint(0, 7)))
+            self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ offset, "0000000000000000")
             self.handleData.send_data()
-        self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f20", "1200000" + str(random.randint(0, 7)))
+        self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f20", "00000000")
         self.handleData.send_data()
-        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f30", "1200000" + str(random.randint(0, 7)))
+        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f30", "00000000" )
         self.handleData.send_data()
-        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f40", "1200000" + str(random.randint(0, 7)))
+        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f40", "0000000000000000")
         self.handleData.send_data()
 
     def sysregtableInit(self):
@@ -391,6 +407,6 @@ class Widget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication([])
-    widget = Widget()
+    widget = MainWindow()
     widget.show()
     sys.exit(app.exec())
