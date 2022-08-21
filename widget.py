@@ -3,12 +3,13 @@ import os
 import re
 import sys
 import time
-import threading
+import random
+import socket
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtWidgets import QHeaderView, QAbstractItemView, QTableView
 from PySide6.QtCore import QFile, QThread, Qt, QMutex, Signal
-from PySide6.QtGui import QStandardItemModel, QStandardItem
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PySide6.QtUiTools import QUiLoader
 from handledata import HandleData
 
@@ -32,6 +33,7 @@ def validate_mac(mac):
         else:
             return False
 
+
 class WorkThread(QThread):
     # 定义一个信号
     trigger = Signal(str)
@@ -52,17 +54,26 @@ class WorkThread(QThread):
             if self.working:
                 # 等待5秒后，给触发信号，并传递test
                 self.trigger.emit('test2')
+                self.num += 1
+#                print(self.num)
                 time.sleep(10)
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        super(MainWindow, self).__init__()
         self.macconfigflag = False
         self.info = ""
-        super(MainWindow, self).__init__()
+        self.msg_box = []
+        for v in range(10):
+            self.msg_box.append(QMessageBox())
         self.load_ui()
         self.ui.smacline.setMaxLength(17)
         self.ui.rmacline.setMaxLength(17)
+        self.ui.ctrl1line.setMaxLength(8)
+        self.ui.ctrl2line.setMaxLength(8)
+        self.ui.configbn.clicked.connect(self.configmac)
+        self.ui.sendbn.clicked.connect(self.sendinfo)
         self.sysregtableInit()
         self.init0tabletableInit()
         self.init1tabletableInit()
@@ -88,18 +99,78 @@ class MainWindow(QMainWindow):
         path = os.fspath(Path(__file__).resolve().parent / "form.ui")
         ui_file = QFile(path)
         ui_file.open(QFile.ReadOnly)
-
         self.ui = loader.load(ui_file, self)
-        self.ui.configbn.clicked.connect(self.configmac)
         ui_file.close()
-
         self.setCentralWidget(self.ui)
         self.setWindowTitle("sg测试工具")
 
-    def messageDialog(self, title, str):
+    def sendinfo(self):
+        flag = 0
+        if len(self.handleData.send_mac) != 17 or not validate_mac(self.handleData.send_mac):
+            flag = 1
+        if len(self.handleData.receive_mac) != 17 or not validate_mac(self.handleData.receive_mac):
+            flag = 2
+        if flag > 0:
+            self.messageDialog(1, "警告", "收发mac未配置，请配置后重试")
+            return
+        self.ctrl1 = self.ui.ctrl1line.text()
+        self.ctrl2 = self.ui.ctrl2line.text()
+        length = self.ui.lengthline.text()
+        globaladdr = self.ui.globaladdrline.text()
+        channel = self.ui.directionBox.currentText()
+        configreq = self.ui.configreqBox.currentText()
+        configwr = self.ui.configwrBox.currentText()
+        configclr = self.ui.configclrBox.currentText()
+        sendata = self.ui.configdatatext.toPlainText()
+        if self.ctrl1 != "" and len(self.ctrl1) == 8:
+            qmtx.lock()
+            self.handleData.recievelock.acquire()
+            self.handleData.receive_data_content = []
+            self.handleData.recievelock.release()
+            self.handleData.receive_data(1)
+            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "否", "000000b0", self.ctrl1)
+            self.handleData.send_data()
+            self.handleData.receive_data_process.join()
+            self.messageDialog(2, "成功", "写ctrl1成功!")
+            flag += 1
+            qmtx.unlock()
+        if self.ctrl2 != "" and len(self.ctrl2) == 8:
+            qmtx.lock()
+            self.handleData.recievelock.acquire()
+            self.handleData.receive_data_content = []
+            self.handleData.recievelock.release()
+            self.handleData.receive_data(1)
+            self.handleData.config_data( "5", "全局配置", "配置请求有效", "写", "否", "000000c0", self.ctrl2)
+            self.handleData.send_data()
+            self.handleData.receive_data_process.join()
+            self.messageDialog(3, "成功", "写ctrl2成功!")
+            flag += 1
+            qmtx.unlock()
+        if sendata != "" and globaladdr != "" and length != "":
+            qmtx.lock()
+            self.handleData.recievelock.acquire()
+            self.handleData.receive_data_content = []
+            self.handleData.recievelock.release()
+            self.handleData.receive_data(1)
+            self.handleData.config_data(length, channel, configreq, configwr, configclr, globaladdr, sendata)
+            self.handleData.send_data()
+            self.handleData.receive_data_process.join()
+            self.messageDialog(4, "成功", "自定义数据读写成功！返回值：" + self.handleData.receive_data_content[0])
+            flag += 1
+            qmtx.unlock()
+        if flag == 0:
+            self.messageDialog(1, "警告", "发送参数错误！请检查！")
+        return
+
+    def messageDialog(self, num, title, str):
         # 核心功能代码就两行，可以加到需要的地方
-        msg_box = QMessageBox(QMessageBox.Warning, title, str)
-        msg_box.exec()
+        if title == "成功":
+            self.msg_box[num].setIcon(QMessageBox.Information)
+        else:
+            self.msg_box[num].setIcon(QMessageBox.Critical)
+        self.msg_box[num].setText(str)
+        self.msg_box[num].setWindowTitle(title)
+        self.msg_box[num].show()
 
     def configmac(self):
         flag = 0
@@ -110,12 +181,12 @@ class MainWindow(QMainWindow):
         if len(self.handleData.receive_mac) != 17 or not validate_mac(self.handleData.receive_mac):
             flag = 2
         if flag == 1:
-            self.messageDialog('警告', 'mac发送地址配置出错！请重试！')
+            self.messageDialog(0, '警告', 'mac发送地址配置出错！请重试！')
             return
         elif flag == 2:
-            self.messageDialog('警告', 'mac接收地址配置出错！请重试！')
+            self.messageDialog(0, '警告', 'mac接收地址配置出错！请重试！')
             return
-        self.messageDialog('成功', 'mac地址配置完成！')
+        self.messageDialog(0, '成功', 'mac地址配置完成！')
         self.handleData.config_port()
         self.macconfigflag = True
         self.worker.working = True
@@ -126,6 +197,8 @@ class MainWindow(QMainWindow):
         self.handleData.receive_data_content = []
         self.handleData.recievelock.release()
         self.handleData.receive_data(98)
+#        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "00000000", "00000000000000")
+#        self.handleData.send_data()
         self.querysysreg()
         self.queryinitreg(10)
         self.queryinitreg(20)
@@ -136,12 +209,23 @@ class MainWindow(QMainWindow):
         self.queryinitreg(31)
         self.queryinitreg(41)
         self.handleData.receive_data_process.join()
+        self.handleData.recievelock.acquire()
         if len(self.handleData.receive_data_content) < 98:
-            self.messageDialog("警告", '接收数据丢失！请检查,重新配置！'+str(len(self.handleData.receive_data_content)))
+            if len(self.handleData.receive_data_content) == 0:
+                self.messageDialog(3, "警告", '接收数据丢失！请检查, 将在下一次更新！')
+            else:
+                self.messageDialog(3, "警告", '接收数据丢失！请检查, 将在下一次更新！num:' +
+                    str(len(self.handleData.receive_data_content)) +
+                    ', 第一组数据为：' + self.handleData.receive_data_content[0] +
+                    ', 最后第二组数据为：' + self.handleData.receive_data_content[-2] +
+                    ', 最后一组数据: ' + self.handleData.receive_data_content[-1])
             self.macconfigflag = False
             self.worker.working = False
+            self.handleData.recievelock.release()
             qmtx.unlock()
             return
+        if len(self.handleData.receive_data_content[0]) > 8:
+            del self.handleData.receive_data_content[0]
         for v in range(0, 10):
             index = self.sysregmodel.index(v, 1)
             self.sysregmodel.setData(index,  self.handleData.receive_data_content[v], Qt.DisplayRole)
@@ -169,24 +253,25 @@ class MainWindow(QMainWindow):
         for v in range(0, 11):
             index = self.taraget4model.index(v, 1)
             self.taraget4model.setData(index, self.handleData.receive_data_content[(v + 10 + 11*7)], Qt.DisplayRole)
+        self.handleData.recievelock.release()
         qmtx.unlock()
 
     def querysysreg(self):
-        for v in range(1,11):
+        for v in range(1, 11):
             offset = '{:02X}'.format(v*16)
-            self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000000" + offset, "00000000")
+            self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000000" + offset, "0000000" + str(random.randint(0,9)))
             self.handleData.send_data()
 
     def queryinitreg(self, num):
         for v in [1, 2, 3, 7, 8, 9, 10, 11]:
             offset = '{:03X}'.format(v*16)
-            self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ offset, "0000000000000000")
+            self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ offset, "0000000000000000" )
             self.handleData.send_data()
-        self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f20", "00000000")
+        self.handleData.config_data( "5", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f20", "00000000" )
         self.handleData.send_data()
         self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f30", "00000000" )
         self.handleData.send_data()
-        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f40", "0000000000000000")
+        self.handleData.config_data( "6", "全局配置", "配置请求有效", "读", "否", "000"+ str(num)+ "f40", "0000000000000000" )
         self.handleData.send_data()
 
     def sysregtableInit(self):
@@ -407,6 +492,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
-    widget = MainWindow()
-    widget.show()
+    app.setWindowIcon(QIcon('tech.ico'))
+    mainWindow = MainWindow()
+    mainWindow.show()
     sys.exit(app.exec())

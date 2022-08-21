@@ -2,10 +2,9 @@ import re
 import random
 import binascii
 import psutil
-from scapy.all import raw, Ether, sniff, sendp
+from scapy.all import raw, Ether, sniff, sendp, AsyncSniffer
 import threading
 import os
-import sys
 
 
 class HandleData:
@@ -208,6 +207,12 @@ class HandleData:
         self.data_content = ""
         self.data_content = hex_data
 
+    def analyze_thread(self, data):
+        self.recievelock.acquire()
+        ret = self.analyze_data(data)
+        self.receive_data_content.append(ret)
+        self.recievelock.release()
+
     # 接收到数据包后进行数据存储
     def process(self, p):
         come_back_hex = eval(str(raw(p)))
@@ -220,7 +225,7 @@ class HandleData:
     # 处理接收到的数据包
     def receive_thread(self, pkcount):
         filter_rule = "ether proto 0xa001"
-        sniff(count=pkcount, iface=self.portname, filter=filter_rule, prn=self.process, timeout = 3)
+        sniff(count=0, iface=self.portname,filter=filter_rule, prn=self.process, timeout=3)
 
     def receive_data(self, pkcount):
         self.receive_data_process = threading.Thread(
